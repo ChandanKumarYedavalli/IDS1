@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Scheduler</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Event Scheduler and Conflict Detector</h1>
+    
+    <div class="form-container">
+      <input type="text" id="event-name" placeholder="Event Name" required>
+      <input type="time" id="start-time" required>
+      <input type="time" id="end-time" required>
+      <button id="add-event">Add Event</button>
+    </div>
+
+    <h2>Scheduled Events</h2>
+    <ul id="event-list"></ul>
+  </div>
+
+  <script src="script.js">
+    // script.js
+
+const eventList = [];
+const eventNameInput = document.getElementById('event-name');
+const startTimeInput = document.getElementById('start-time');
+const endTimeInput = document.getElementById('end-time');
+const addEventButton = document.getElementById('add-event');
+const eventListElement = document.getElementById('event-list');
+
+// Add event listener for "Add Event" button
+addEventButton.addEventListener('click', () => {
+  const eventName = eventNameInput.value.trim();
+  const startTime = startTimeInput.value;
+  const endTime = endTimeInput.value;
+
+  if (!eventName || !startTime || !endTime) {
+    alert('Please fill all the fields!');
+    return;
+  }
+
+  if (startTime >= endTime) {
+    alert('Start time must be earlier than end time!');
+    return;
+  }
+
+  const newEvent = {
+    name: eventName,
+    start: startTime,
+    end: endTime,
+  };
+
+  // Check for conflicts
+  let hasConflict = false;
+  for (const event of eventList) {
+    if (
+      (newEvent.start < event.end && newEvent.end > event.start) // Overlapping condition
+    ) {
+      hasConflict = true;
+      break;
+    }
+  }
+
+  // Add event to the list
+  eventList.push(newEvent);
+  renderEvents();
+
+  // Clear inputs
+  eventNameInput.value = '';
+  startTimeInput.value = '';
+  endTimeInput.value = '';
+
+  if (hasConflict) {
+    alert('Conflict detected with one or more events!');
+  }
+});
+
+// Function to render events in the list
+function renderEvents() {
+  eventListElement.innerHTML = '';
+
+  for (const event of eventList) {
+    const listItem = document.createElement('li');
+    listItem.textContent = `${event.name} (${event.start} - ${event.end})`;
+
+    // Check if the event has conflicts
+    let isConflict = false;
+    for (const otherEvent of eventList) {
+      if (event !== otherEvent && event.start < otherEvent.end && event.end > otherEvent.start) {
+        isConflict = true;
+        break;
+      }
+    }
+
+    if (isConflict) {
+      listItem.classList.add('conflict');
+    }
+
+    eventListElement.appendChild(listItem);
+  }
+}
+
+  </script>
+</body>
+</html>
